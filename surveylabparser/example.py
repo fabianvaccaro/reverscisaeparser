@@ -1,4 +1,4 @@
-from reverseparser import *
+from surveylabparser.reverseparser import *
 
 info_question = InfoQuestion(
     'Recientemente se han realizado obras de reforma en la Alameda de Málaga, ¿conoce usted como ha quedado esta calle? ¿Le gusta mucho, bastante, poco o nada?')

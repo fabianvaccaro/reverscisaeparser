@@ -137,7 +137,7 @@ class ReverseQuestion(BasicQuestion):
         return (10 ** self.digits) - 3
 
     def __str__(self):
-        return ET.tostring(self.toXml()).decode('utf-8')
+        return ET.tostring(self.toXml(), encoding='utf8').decode('utf-8')
 
 
 class InfoQuestion(ReverseQuestion):
@@ -220,7 +220,7 @@ class ReverseBattery():
         return x_q
 
     def __str__(self):
-        return ET.tostring(self.toXml()).decode('utf-8')
+        return ET.tostring(self.toXml(), encoding='utf-8').decode('utf-8')
 
 
 class ReverseCascade():
