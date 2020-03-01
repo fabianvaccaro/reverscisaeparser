@@ -258,7 +258,7 @@ class ReverseBattery():
             self.question.name = '{}.{}'.format(self.name, i + 1)
             self.question.item = chunk
             x_block.append(self.question.toXml())
-            nextElementId = self.startingId + self.stride
+            nextElementId += self.stride
         return x_block
 
     def __str__(self):
