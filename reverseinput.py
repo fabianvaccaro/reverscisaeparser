@@ -17,7 +17,7 @@ class QuestionType(Enum):
 class QuestionEnclosure(Enum):
     simple = 1
     battery = 2
-    knowledge_battery = 3
+    knowledge_cascade = 3
 
 
 def reverse_questionType(qt):
@@ -37,10 +37,10 @@ def reverse_questionType(qt):
 
 
 class ReverseOption():
-    def __init__(self):
-        self.codification = 1
-        self.type = None
-        self.text = '.'
+    def __init__(self, codification=1, text='.', optype=None):
+        self.codification = codification
+        self.type = optype
+        self.text = text
 
     def toXml(self):
         opt = ET.Element('option')
@@ -51,8 +51,25 @@ class ReverseOption():
         return opt
 
 
-class ReverseQuestion():
+class BasicQuestion():
     def __init__(self):
+        self.id_x = 0
+        self.name = 'P'
+        self.title = ''
+        self.type = None
+        self.digits = 1
+        self.group = None
+        self.ns = True
+        self.nc = True
+        self.np = True
+        self.body = None
+        self.hint = None
+        self.item = None
+
+
+class ReverseQuestion(BasicQuestion):
+    def __init__(self):
+        super(ReverseQuestion, self).__init__()
         self.id_x = 0
         self.name = 'P'
         self.title = ''
@@ -71,7 +88,8 @@ class ReverseQuestion():
         x_question.set('id', str(self.id_x))
         x_question.set('name', self.name)
         x_question.set('title', self.title)
-        x_question.set('type', reverse_questionType(self.type))
+        x_question.set('type', reverse_questionType(self.type) if self.type is not None else reverse_questionType(
+            QuestionType.info))
         x_question.set('digits', str(self.digits))
         if self.group is not None:
             x_question.set('group', str(self.group))
@@ -96,8 +114,37 @@ class ReverseQuestion():
         x_question.append(x_np)
         return x_question
 
+    def toBattery(self, items: list):
+        b = ReverseBattery(self, items)
+        return b
+
+    def toBatterySimple(self, strlist: list):
+        subquestions = []
+        for s, i in zip(strlist, range(len(strlist))):
+            bq = BasicQuestion()
+            bq.item = s
+            bq.name = '{}.{}'.format(self.name, i)
+            subquestions.append(bq)
+        return self.toBattery(subquestions)
+
+    def getNCValue(self):
+        return (10 ** self.digits) - 1
+
+    def getNSValue(self):
+        return (10 ** self.digits) - 2
+
+    def getNPValue(self):
+        return (10 ** self.digits) - 3
+
     def __str__(self):
-        return str(ET.tostring(self.toXml()))
+        return ET.tostring(self.toXml()).decode('utf-8')
+
+
+class InfoQuestion(ReverseQuestion):
+    def __init__(self, body):
+        super(InfoQuestion, self).__init__()
+        self.body = body
+        self.type = QuestionType.info
 
 
 class ReverseSelectionQuestion(ReverseQuestion):
@@ -131,8 +178,7 @@ class ReverseLikertNQuestion(ReverseSelectionQuestion):
 
     def toXml(self):
         for i in range(self.first_value, self.last_value + 1):
-            opt = ReverseOption()
-            opt.codification = i
+            opt = ReverseOption(codification=i)
             if i == self.first_value:
                 opt.text = self.first_txt
             elif i == self.last_value:
@@ -142,3 +188,87 @@ class ReverseLikertNQuestion(ReverseSelectionQuestion):
             self.options.append(opt)
         x_q = super(ReverseLikertNQuestion, self).toXml()
         return x_q
+
+
+class ReverseBattery():
+    def __init__(self, q: ReverseQuestion, items: list):
+        self.subquestions = []
+        for item in items:
+            assert isinstance(item, BasicQuestion)
+            self.subquestions.append(item)
+        self.question = q
+        self.N = len(self.subquestions)
+        if self.N > 0:
+            q.group = self.N
+
+    def toXml(self):
+        x_q = self.question.toXml()
+        for ti in self.subquestions:
+            assert isinstance(ti, BasicQuestion)
+            x_subquestion = ET.Element('subquestion')
+            if ti.name is not None:
+                x_subquestion.set('name', ti.name)
+            if ti.hint is not None:
+                x_hint = ET.Element('hint')
+                x_hint.text = ti.hint
+                x_subquestion.append(x_hint)
+            if ti.item is not None:
+                x_item = ET.Element('item')
+                x_item.text = ti.item
+                x_subquestion.append(x_item)
+            x_q.append(x_subquestion)
+        return x_q
+
+    def __str__(self):
+        return ET.tostring(self.toXml()).decode('utf-8')
+
+
+class ReverseCascade():
+    def __init__(self, info_question: InfoQuestion, main_question: ReverseQuestion, linked_question: ReverseQuestion,
+                 strlist: list, stride=10):
+        self.startingId = 0
+        self.title = '.'
+        self.info_question = info_question
+        self.main_question = main_question
+        self.linked_question = linked_question
+        self.items = strlist
+        self.stride = stride
+        self.name = 'P'
+        if self.info_question is not None:
+            self.startingId = self.info_question.id_x
+            self.title = self.info_question.title
+            self.name = self.info_question.name
+        else:
+            self.startingId = self.main_question.id_x
+            self.title = self.main_question.title
+            self.name = self.main_question.name
+
+    def toXml(self):
+        x_block = ET.Element('collection')
+        x_block.set('id', str(self.startingId))
+        x_block.set('title', self.title)
+        x_block.set('type', 'virtual')
+
+        nextElementId = self.startingId + self.stride
+
+        if self.info_question is not None:
+            x_iq = self.info_question.toXml()
+            x_block.append(x_iq)
+
+        for chunk, i in zip(self.items, range(len(self.items))):
+            self.main_question.id_x = nextElementId
+            self.main_question.name = '{}.{}.{}'.format(self.name, i + 1, 'A')
+            self.main_question.item = chunk
+            x_block.append(self.main_question.toXml())
+            nextElementId += self.stride
+
+            self.linked_question.id_x = nextElementId
+            self.linked_question.name = '{}.{}.{}'.format(self.name, i + 1, 'B')
+            self.linked_question.item = chunk
+            x_block.append(self.linked_question.toXml())
+            nextElementId += self.stride
+
+        return x_block
+
+    def __str__(self):
+        return ET.tostring(self.toXml(), encoding='utf8').decode('utf-8')
