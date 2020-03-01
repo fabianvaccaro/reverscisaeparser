@@ -145,6 +145,10 @@ class InfoQuestion(ReverseQuestion):
         super(InfoQuestion, self).__init__()
         self.body = body
         self.type = QuestionType.info
+        self.name = ''
+        self.ns = False
+        self.nc = False
+        self.np = False
 
 
 class ReverseSelectionQuestion(ReverseQuestion):
