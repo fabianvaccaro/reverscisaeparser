@@ -236,7 +236,7 @@ class ReverseGroup():
 
 
 class ReverseBattery():
-    def __init__(self, q: ReverseQuestion, strList: list, stride = 10):
+    def __init__(self, q: ReverseQuestion, strList: list, stride=10):
         self.alt_question_bodies = []
         for item in strList:
             self.alt_question_bodies.append(item)
@@ -245,7 +245,6 @@ class ReverseBattery():
         self.startingId = q.id_x
         self.stride = stride
         self.name = self.question.name
-
 
     def toXml(self):
         x_block = ET.Element('collection')
@@ -258,13 +257,11 @@ class ReverseBattery():
             self.question.name = '{}.{}'.format(self.name, i + 1)
             self.question.item = chunk
             x_block.append(self.question.toXml())
-            nextElementId += self.stride
+            nextElementId = nextElementId + self.stride
         return x_block
 
     def __str__(self):
         return ET.tostring(self.toXml(), encoding='utf8').decode('utf-8')
-
-
 
 
 class ReverseCascade():
