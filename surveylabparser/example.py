@@ -35,3 +35,8 @@ linked_question.np = False
 cascade = ReverseCascade(info_question=info_question, main_question=main_question, linked_question=linked_question,
                          strlist=['AAAAAAAAAAAAAAAAAAAA', 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'])
 print(cascade)
+
+q = InfoQuestion('A continuación, nos gustaría saber su opinión sobre algunos temas de actualidad relacionados principalmente con la ciudad de Málaga Capital. SUS RESPUESTAS SON MUY IMPORTANTES PARA NOSOTROS')
+q.id_x = 710
+q.name = ''
+print(q)
