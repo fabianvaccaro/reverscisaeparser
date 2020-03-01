@@ -36,6 +36,10 @@ def reverse_questionType(qt):
     return revs[qt]
 
 
+def xml2str(xmlElement):
+    return ET.tostring(xmlElement, encoding='utf8').decode('utf-8')
+
+
 class ReverseOption():
     def __init__(self, codification=1, text='.', optype=None):
         self.codification = codification
@@ -114,18 +118,22 @@ class ReverseQuestion(BasicQuestion):
         x_question.append(x_np)
         return x_question
 
-    def toBattery(self, items: list):
-        b = ReverseBattery(self, items)
+    def toGruoped(self, items: list):
+        b = ReverseGroup(self, items)
         return b
 
-    def toBatterySimple(self, strlist: list):
+    def toGroupedSimple(self, strlist: list):
         subquestions = []
         for s, i in zip(strlist, range(len(strlist))):
             bq = BasicQuestion()
             bq.item = s
             bq.name = '{}.{}'.format(self.name, i)
             subquestions.append(bq)
-        return self.toBattery(subquestions)
+        return self.toGruoped(subquestions)
+
+    def toBatterySimple(self, strlist: list, stride=10):
+        b = ReverseBattery(self, strlist, stride)
+        return b
 
     def getNCValue(self):
         return (10 ** self.digits) - 1
@@ -194,7 +202,7 @@ class ReverseLikertNQuestion(ReverseSelectionQuestion):
         return x_q
 
 
-class ReverseBattery():
+class ReverseGroup():
     def __init__(self, q: ReverseQuestion, items: list):
         self.subquestions = []
         for item in items:
@@ -225,6 +233,37 @@ class ReverseBattery():
 
     def __str__(self):
         return ET.tostring(self.toXml(), encoding='utf-8').decode('utf-8')
+
+
+class ReverseBattery():
+    def __init__(self, q: ReverseQuestion, strList: list, stride = 10):
+        self.alt_question_bodies = []
+        for item in strList:
+            self.alt_question_bodies.append(item)
+        self.question = q
+        self.N = len(self.alt_question_bodies)
+        self.startingId = q.id_x
+        self.stride = stride
+        self.name = self.question.name
+
+
+    def toXml(self):
+        x_block = ET.Element('collection')
+        x_block.set('id', str(self.startingId))
+        x_block.set('title', self.question.title)
+        x_block.set('type', 'virtual')
+        nextElementId = self.startingId + self.stride
+        for chunk, i in zip(self.alt_question_bodies, range(len(self.alt_question_bodies))):
+            self.question.id_x = nextElementId
+            self.question.name = '{}.{}'.format(self.name, i + 1)
+            self.question.item = chunk
+            x_block.append(self.question.toXml())
+        return x_block
+
+    def __str__(self):
+        return ET.tostring(self.toXml(), encoding='utf8').decode('utf-8')
+
+
 
 
 class ReverseCascade():

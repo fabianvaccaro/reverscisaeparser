@@ -40,3 +40,11 @@ q = InfoQuestion('A continuación, nos gustaría saber su opinión sobre algunos
 q.id_x = 710
 q.name = ''
 print(q)
+
+
+batt = ReverseQuestion()
+batt.body = "this is the body"
+batt.name = "P13337"
+batt.id_x = 100
+res = batt.toBatterySimple(['PRIMERO' 'SEGUNDO', 'TERCERO'])
+print(res)
