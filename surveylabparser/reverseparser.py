@@ -189,6 +189,7 @@ class ReverseLikertNQuestion(ReverseSelectionQuestion):
         self.last_txt = 'muy bien'
 
     def toXml(self):
+        self.options = []
         for i in range(self.first_value, self.last_value + 1):
             opt = ReverseOption(codification=i)
             if i == self.first_value:
