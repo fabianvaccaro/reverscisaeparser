@@ -187,6 +187,7 @@ class ReverseLikertNQuestion(ReverseSelectionQuestion):
         self.last_value = 10
         self.first_txt = 'muy mal'
         self.last_txt = 'muy bien'
+        self.type = QuestionType.likertn
 
     def toXml(self):
         self.options = []
