@@ -294,8 +294,10 @@ class ReverseCascade():
         nextElementId = self.startingId + self.stride
 
         if self.info_question is not None:
+            self.info_question.id_x = nextElementId
             x_iq = self.info_question.toXml()
             x_block.append(x_iq)
+            nextElementId += self.stride
 
         for chunk, i in zip(self.items, range(len(self.items))):
             self.main_question.id_x = nextElementId
