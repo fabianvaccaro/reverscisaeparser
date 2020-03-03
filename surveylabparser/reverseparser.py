@@ -127,7 +127,7 @@ class ReverseQuestion(BasicQuestion):
         for s, i in zip(strlist, range(len(strlist))):
             bq = BasicQuestion()
             bq.item = s
-            bq.name = '{}.{}'.format(self.name, i)
+            bq.name = '{}.{}'.format(self.name, i + 1)
             subquestions.append(bq)
         return self.toGruoped(subquestions)
 
