@@ -180,6 +180,14 @@ class ReverseSelectionQuestion(ReverseQuestion):
         return x_q
 
 
+class ReverseNumericalQuestion(ReverseQuestion):
+    def __init__(self):
+        super(ReverseNumericalQuestion, self).__init__()
+        self.minoptions = 1
+        self.maxoptions = 1
+        self.type = QuestionType.numerical
+
+
 class ReverseLikertNQuestion(ReverseSelectionQuestion):
     def __init__(self):
         super(ReverseLikertNQuestion, self).__init__()
