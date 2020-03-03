@@ -185,7 +185,21 @@ class ReverseNumericalQuestion(ReverseQuestion):
         super(ReverseNumericalQuestion, self).__init__()
         self.minoptions = 1
         self.maxoptions = 1
+        self.options = []
         self.type = QuestionType.numerical
+
+    def toXml(self):
+        x_q = super(ReverseNumericalQuestion, self).toXml()
+        if len(self.options) > 0:
+            x_options = ET.Element('options')
+            x_options.set('minoptions', str(self.minoptions))
+            x_options.set('maxoptions', str(self.maxoptions))
+            for opt in self.options:
+                assert isinstance(opt, ReverseOption)
+                x_opt = opt.toXml()
+                x_options.append(x_opt)
+            x_q.append(x_options)
+        return x_q
 
 
 class ReverseLikertNQuestion(ReverseSelectionQuestion):

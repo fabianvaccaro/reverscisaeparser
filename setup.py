@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name="surveylabparser",
-      version="0.2.0",
+      version="0.2.1",
       description="Reverse Parsing for the CISA SurveyLab XML",
       url="http://cmgi.uma.es",
       author="CM&GI",
